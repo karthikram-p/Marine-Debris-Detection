@@ -1,3 +1,4 @@
 gdal-bin
 libgdal-dev
 python3-gdal
+python3-pip
