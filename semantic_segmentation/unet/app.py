@@ -5,7 +5,7 @@ import numpy as np
 import torch
 import matplotlib.pyplot as plt
 from osgeo import gdal
-from unet import UNet
+from unet_plus_plus import UNetPlusPlus
 from dataloader import bands_mean, bands_std
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -14,11 +14,11 @@ st.write(f"🔍 Using device: {device}")
 INPUT_CHANNELS = 11
 OUTPUT_CLASSES = 11
 HIDDEN_CHANNELS = 16  
-CHECKPOINT_PATH = "C:/Users/karth/Downloads/Projects/Mini_Project/MDD2/Marine_Debris_Detection/semantic_segmentation/unet/trained_models/best_model_marine_debris.pth"
+CHECKPOINT_PATH = "trained_models/best_model_marine_debris.pth"
 
 @st.cache_resource
 def load_model():
-    model = UNet(input_bands=INPUT_CHANNELS, output_classes=OUTPUT_CLASSES, hidden_channels=HIDDEN_CHANNELS)
+    model = UNetPlusPlus(input_bands=INPUT_CHANNELS, output_classes=OUTPUT_CLASSES, hidden_channels=HIDDEN_CHANNELS)
     model_path = os.path.join(CHECKPOINT_PATH)
 
     if not os.path.exists(model_path):
