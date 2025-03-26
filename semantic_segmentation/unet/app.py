@@ -4,9 +4,7 @@ import streamlit as st
 import numpy as np
 import torch
 import matplotlib.pyplot as plt
-from osgeo import gdal
-from unet_plus_plus import UNetPlusPlus
-from dataloader import bands_mean, bands_std
+import rasterio
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 st.write(f"🔍 Using device: {device}")
@@ -14,7 +12,11 @@ st.write(f"🔍 Using device: {device}")
 INPUT_CHANNELS = 11
 OUTPUT_CLASSES = 11
 HIDDEN_CHANNELS = 16  
-CHECKPOINT_PATH = "trained_models/best_model_marine_debris.pth"
+CHECKPOINT_PATH = "semantic_segmentation/unet/trained_models/best_model_marine_debris.pth"
+
+# Import band statistics
+from semantic_segmentation.unet.dataloader import bands_mean, bands_std
+from semantic_segmentation.unet.unet_plus_plus import UNetPlusPlus
 
 @st.cache_resource
 def load_model():
@@ -33,14 +35,21 @@ def load_model():
     return model
 
 def load_tiff_image(uploaded_file):
-    with tempfile.NamedTemporaryFile(delete=False) as temp_file:
+    # Save the uploaded file to a temporary location
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".tif") as temp_file:
         temp_file.write(uploaded_file.read())
-        temp_file_path = temp_file.name  
-    ds = gdal.Open(temp_file_path)
-    if ds is None:
-        raise ValueError("Could not open the TIFF file with GDAL.")
-    image_data = ds.ReadAsArray()
-    return image_data, ds.GetGeoTransform(), ds.GetProjection()
+        temp_file_path = temp_file.name
+    
+    # Open the TIFF file with rasterio
+    with rasterio.open(temp_file_path) as ds:
+        # Read all bands into a numpy array (bands, height, width)
+        image_data = ds.read()  # Shape: (bands, height, width)
+        
+        # Get geotransform and projection for output
+        geo_transform = ds.transform
+        projection = ds.crs.to_wkt() if ds.crs else None
+
+    return image_data, geo_transform, projection, temp_file_path
 
 def preprocess_image(image):
     img = np.array(image).astype(np.float32)
@@ -64,19 +73,26 @@ def predict(image_tensor, model):
     return mapped_mask
 
 def save_prediction_as_tiff(predicted_mask, geo_transform, projection):
-    temp_tiff_path = "predicted_output.tif"
-    driver = gdal.GetDriverByName("GTiff")
+    temp_tiff_path = tempfile.mktemp(suffix=".tif")
     rows, cols = predicted_mask.shape
-    dataset = driver.Create(temp_tiff_path, cols, rows, 1, gdal.GDT_Byte)
+    
+    # Define the output profile
+    profile = {
+        'driver': 'GTiff',
+        'height': rows,
+        'width': cols,
+        'count': 1,
+        'dtype': 'uint8',
+        'transform': geo_transform,
+        'crs': projection
+    }
 
-    if geo_transform:
-        dataset.SetGeoTransform(geo_transform)
-    if projection:
-        dataset.SetProjection(projection)
+    # Write the predicted mask to a GeoTIFF
+    with rasterio.open(temp_tiff_path, 'w', **profile) as dst:
+        dst.write(predicted_mask.astype(np.uint8), 1)
 
-    dataset.GetRasterBand(1).WriteArray(predicted_mask.astype(np.uint8))
-    dataset.FlushCache()
-    dataset = None
+    # Ensure the file is readable
+    os.chmod(temp_tiff_path, 0o666)
     return temp_tiff_path
 
 def main():
@@ -86,7 +102,7 @@ def main():
 
     if uploaded_tiff:
         st.subheader("🖼️ Uploaded TIFF Image")
-        image_data, geo_transform, projection = load_tiff_image(uploaded_tiff)
+        image_data, geo_transform, projection, temp_file_path = load_tiff_image(uploaded_tiff)
 
         if image_data.shape[0] != INPUT_CHANNELS:
             st.error(f"🚨 Expected {INPUT_CHANNELS} bands, but got {image_data.shape[0]}")
@@ -110,7 +126,16 @@ def main():
 
         tiff_path = save_prediction_as_tiff(predicted_mask, geo_transform, projection)
         with open(tiff_path, "rb") as file:
-            st.download_button(label="📥 Download Segmentation TIFF", data=file, file_name="segmentation_output.tif", mime="image/tiff")
+            st.download_button(
+                label="📥 Download Segmentation TIFF",
+                data=file,
+                file_name="segmentation_output.tif",
+                mime="image/tiff"
+            )
+
+        # Clean up the temporary file
+        os.unlink(temp_file_path)
+        os.unlink(tiff_path)
 
 if __name__ == "__main__":
     main()
