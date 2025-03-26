@@ -15,8 +15,8 @@ HIDDEN_CHANNELS = 16
 CHECKPOINT_PATH = "semantic_segmentation/unet/trained_models/best_model_marine_debris.pth"
 
 # Import band statistics
-from semantic_segmentation.unet.dataloader import bands_mean, bands_std
-from semantic_segmentation.unet.unet_plus_plus import UNetPlusPlus
+from dataloader import bands_mean, bands_std
+from unet_plus_plus import UNetPlusPlus
 
 @st.cache_resource
 def load_model():
