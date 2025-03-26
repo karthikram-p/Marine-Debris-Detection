@@ -1,1 +1,3 @@
 libgdal-dev
+g++
+build-essential
