@@ -8,178 +8,171 @@ import rasterio
 from zipfile import ZipFile
 import glob
 
-# Constants
+
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+st.write(f"🔍 Using device: {device}")
+
 INPUT_CHANNELS = 11
 OUTPUT_CLASSES = 11
-HIDDEN_CHANNELS = 16
+HIDDEN_CHANNELS = 16  
 CHECKPOINT_PATH = "semantic_segmentation/unet/trained_models/best_model_marine_debris.pth"
-SAMPLE_DATA_PATH = "semantic_segmentation/unet/sample_data"
-QML_PATH = "semantic_segmentation/unet/mask_style.qml"
 
-# Dummy mean/std (replace with actual ones)
-bands_mean = np.ones(INPUT_CHANNELS)
-bands_std = np.ones(INPUT_CHANNELS)
-
+# Import band statistics
+from dataloader import bands_mean, bands_std
 from unet_plus_plus import UNetPlusPlus
-
 
 @st.cache_resource
 def load_model():
     model = UNetPlusPlus(input_bands=INPUT_CHANNELS, output_classes=OUTPUT_CLASSES, hidden_channels=HIDDEN_CHANNELS)
-    model.load_state_dict(torch.load(CHECKPOINT_PATH, map_location=device))
+    model_path = os.path.join(CHECKPOINT_PATH)
+
+    if not os.path.exists(model_path):
+        st.error(f"🚨 Model checkpoint not found at {model_path}")
+        return None
+
+    checkpoint = torch.load(model_path, map_location=device)
+    model.load_state_dict(checkpoint)
     model.to(device)
     model.eval()
+    st.success("✅ Model Loaded Successfully!")
     return model
 
+def load_tiff_image(uploaded_file):
+    # Save the uploaded file to a temporary location
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".tif") as temp_file:
+        temp_file.write(uploaded_file.read())
+        temp_file_path = temp_file.name
+    
+    # Open the TIFF file with rasterio
+    with rasterio.open(temp_file_path) as ds:
+        # Read all bands into a numpy array (bands, height, width)
+        image_data = ds.read()  # Shape: (bands, height, width)
+        
+        # Get geotransform and projection for output
+        geo_transform = ds.transform
+        projection = ds.crs.to_wkt() if ds.crs else None
 
-def zip_sample_images(folder_path=SAMPLE_DATA_PATH, zip_name="sample_images.zip"):
+    return image_data, geo_transform, projection, temp_file_path
+
+def preprocess_image(image):
+    img = np.array(image).astype(np.float32)
+
+    nan_mask = np.isnan(img)
+    mean_values = np.tile(bands_mean[:, None, None], (1, img.shape[1], img.shape[2]))
+    img = np.where(nan_mask, mean_values, img)
+
+    img = (img - bands_mean[:, None, None]) / bands_std[:, None, None]
+
+    img_tensor = torch.tensor(img).unsqueeze(0).to(device)
+    return img_tensor
+
+def predict(image_tensor, model):
+    with torch.no_grad():
+        logits = model(image_tensor)
+    probabilities = torch.softmax(logits, dim=1)
+    predicted_mask = torch.argmax(probabilities, dim=1).squeeze(0).cpu().numpy()
+    
+    mapped_mask = predicted_mask + 1
+    return mapped_mask
+
+def save_prediction_as_tiff(predicted_mask, geo_transform, projection):
+    temp_tiff_path = tempfile.mktemp(suffix=".tif")
+    rows, cols = predicted_mask.shape
+    
+    # Define the output profile
+    profile = {
+        'driver': 'GTiff',
+        'height': rows,
+        'width': cols,
+        'count': 1,
+        'dtype': 'uint8',
+        'transform': geo_transform,
+        'crs': projection
+    }
+
+    # Write the predicted mask to a GeoTIFF
+    with rasterio.open(temp_tiff_path, 'w', **profile) as dst:
+        dst.write(predicted_mask.astype(np.uint8), 1)
+
+    # Ensure the file is readable
+    os.chmod(temp_tiff_path, 0o666)
+    return temp_tiff_path
+
+def zip_sample_images(folder_path="semantic_segmentation/unet/sample_data", zip_name="sample_images.zip"):
+    """
+    Create a ZIP file containing sample TIFF images from the specified folder.
+    """
     temp_zip_path = os.path.join(tempfile.gettempdir(), zip_name)
+    if not os.path.exists(folder_path):
+        raise FileNotFoundError(f"Sample folder '{folder_path}' does not exist.")
+    
     with ZipFile(temp_zip_path, 'w') as zipf:
-        for f in glob.glob(os.path.join(folder_path, "*.tif"))[:20]:
-            zipf.write(f, os.path.basename(f))
+        tiff_files = glob.glob(os.path.join(folder_path, "*.tif"))
+        if not tiff_files:
+            raise FileNotFoundError(f"No TIFF files found in the folder '{folder_path}'.")
+        
+        for file_path in tiff_files[:20]:  # Limit to 20 files
+            zipf.write(file_path, os.path.basename(file_path))
+    
     return temp_zip_path
 
 
-def load_tiff_image(uploaded_file):
-    with tempfile.NamedTemporaryFile(delete=False, suffix=".tif") as tmp:
-        tmp.write(uploaded_file.read())
-        temp_path = tmp.name
-    with rasterio.open(temp_path) as ds:
-        img = ds.read()
-        geo_transform = ds.transform
-        projection = ds.crs.to_wkt() if ds.crs else None
-    return img, geo_transform, projection, temp_path
-
-
-def preprocess_image(img):
-    img = img.astype(np.float32)
-    img = np.where(np.isnan(img), np.tile(bands_mean[:, None, None], img.shape[1:]), img)
-    img = (img - bands_mean[:, None, None]) / bands_std[:, None, None]
-    return torch.tensor(img).unsqueeze(0).to(device)
-
-
-def predict(tensor_img, model):
-    with torch.no_grad():
-        logits = model(tensor_img)
-    probs = torch.softmax(logits, dim=1)
-    return torch.argmax(probs, dim=1).squeeze(0).cpu().numpy() + 1
-
-
-def save_prediction_as_tiff(mask, transform, projection):
-    temp_path = tempfile.mktemp(suffix=".tif")
-    profile = {
-        'driver': 'GTiff',
-        'height': mask.shape[0],
-        'width': mask.shape[1],
-        'count': 1,
-        'dtype': 'uint8',
-        'transform': transform,
-        'crs': projection
-    }
-    with rasterio.open(temp_path, 'w', **profile) as dst:
-        dst.write(mask.astype(np.uint8), 1)
-    os.chmod(temp_path, 0o666)
-    return temp_path
-
-
-# -------------------------
-# UI Pages
-# -------------------------
-
-def show_home():
-    st.title("🌊 Marine Debris Info & QGIS Guide")
-    st.markdown("""
-    <div style="padding: 10px 20px; background-color: #e0f7fa; border-radius: 8px;">
-        <h3>🌐 What is Marine Debris?</h3>
-        <p>Marine debris is human-made waste that ends up in oceans and waterways. It affects marine life, ecosystems, and human health.</p>
-    </div>
-    """, unsafe_allow_html=True)
-
-    st.markdown("---")
-    st.markdown("### 🧪 Classes Detected by the Model")
-    st.dataframe({
-        "Class ID": list(range(1, 16)),
-        "Class Name": [
-            "Marine Debris", "Dense Sargassum", "Sparse Sargassum", "Natural Organic Material", "Ship", "Clouds",
-            "Marine Water", "Sediment-Laden Water", "Foam", "Turbid Water", "Shallow Water", "Waves",
-            "Cloud Shadows", "Wakes", "Mixed Water"
-        ]
-    }, use_container_width=True)
-
-    st.markdown("---")
-    st.markdown("### 🗺️ Viewing in QGIS")
-    st.markdown("""
-    To view your segmented output in QGIS with color labels:
-    1. **Open** your `.tif` prediction output in QGIS.
-    2. Right-click the layer → **Properties** → **Symbology**.
-    3. Click **Style > Load Style...** and select the `.qml` file provided.
-    4. 🎨 The mask will now be color-coded by class!
-
-    > This allows quick interpretation of results directly in a GIS environment.
-    """)
-    st.info("Scroll to the bottom of the Segmentation page to download the QML file!")
-
-def show_segmentation():
-    st.title("🧠 Semantic Segmentation")
+def main():
+    st.title("🌊 Marine Debris Semantic Segmentation with U-Net")
 
     with st.expander("📦 Download Sample TIFF Images"):
-        st.write("Get up to 20 multi-band TIFF files to try out the model.")
+        st.write("Need data to test? Download up to 20 sample multi-band TIFF images to try out the model.")
         try:
             zip_path = zip_sample_images()
-            with open(zip_path, "rb") as f:
-                st.download_button("📥 Download Sample ZIP", f, "sample_images.zip", "application/zip")
-        except Exception as e:
-            st.error(str(e))
+            with open(zip_path, "rb") as zf:
+                st.download_button(
+                    label="📥 Download Sample Images ZIP",
+                    data=zf,
+                    file_name="sample_images.zip",
+                    mime="application/zip"
+                )
+        except FileNotFoundError as e:
+            st.error(f"🚨 {e}")
 
-    uploaded_file = st.file_uploader("📂 Upload Multi-Band TIFF Image", type=["tiff", "tif"])
 
-    if uploaded_file:
-        st.subheader("🖼️ Processing Uploaded Image")
-        img, transform, projection, temp_path = load_tiff_image(uploaded_file)
+    uploaded_tiff = st.file_uploader("📂 Upload Multi-Band TIFF Image", type=["tiff", "tif"])
 
-        if img.shape[0] != INPUT_CHANNELS:
-            st.error(f"Expected {INPUT_CHANNELS} bands, but got {img.shape[0]}")
+    if uploaded_tiff:
+        st.subheader("🖼️ Uploaded TIFF Image")
+        image_data, geo_transform, projection, temp_file_path = load_tiff_image(uploaded_tiff)
+
+        if image_data.shape[0] != INPUT_CHANNELS:
+            st.error(f"🚨 Expected {INPUT_CHANNELS} bands, but got {image_data.shape[0]}")
             return
 
-        st.success("✅ Image loaded successfully!")
-
         model = load_model()
-        tensor_img = preprocess_image(img)
-        mask = predict(tensor_img, model)
+        if model is None:
+            return
 
-        st.markdown("### 🎯 Segmentation Result")
-        col1, col2 = st.columns([2, 1])
-        with col1:
-            fig, ax = plt.subplots()
-            ax.imshow(mask, cmap="tab20")
-            ax.set_title("Predicted Mask")
-            ax.axis("off")
-            st.pyplot(fig)
+        image_tensor = preprocess_image(image_data)
 
-        with col2:
-            tiff_out_path = save_prediction_as_tiff(mask, transform, projection)
-            with open(tiff_out_path, "rb") as f:
-                st.download_button("📥 Download Segmented TIFF", f, "segmented_output.tif", "image/tiff")
+        st.subheader("🧠 Running Model...")
+        predicted_mask = predict(image_tensor, model)
+        st.success("✅ Prediction Complete!")
 
-        # QML Download
-        st.markdown("---")
-        st.markdown("### 🎨 QGIS Color Mask Mapping")
-        st.write("Apply class color styling in QGIS using this style file.")
-        try:
-            with open(QML_PATH, "rb") as f:
-                st.download_button("🎨 Download QGIS Style (.qml)", f, "mask_style.qml", "text/xml")
-        except FileNotFoundError:
-            st.error("❌ QML file not found.")
+        st.subheader("🖥️ Predicted Segmentation Mask (Grayscale)")
+        fig, ax = plt.subplots(figsize=(6, 6))
+        ax.imshow(predicted_mask, cmap="gray")
+        ax.axis("off")
+        st.pyplot(fig)
 
-        os.unlink(temp_path)
-        os.unlink(tiff_out_path)
+        tiff_path = save_prediction_as_tiff(predicted_mask, geo_transform, projection)
+        with open(tiff_path, "rb") as file:
+            st.download_button(
+                label="📥 Download Segmentation TIFF",
+                data=file,
+                file_name="segmentation_output.tif",
+                mime="image/tiff"
+            )
 
-# Sidebar Navigation
-st.sidebar.title("🚀 Navigation")
-page = st.sidebar.radio("Select a page", ["🏠 Info & Guide", "🧪 Segmentation"])
+        # Clean up the temporary file
+        os.unlink(temp_file_path)
+        os.unlink(tiff_path)
 
-if page == "🏠 Info & Guide":
-    show_home()
-else:
-    show_segmentation()
+if __name__ == "__main__":
+    main()
