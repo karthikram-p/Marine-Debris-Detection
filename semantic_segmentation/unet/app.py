@@ -282,7 +282,7 @@ def about_page():
 
 # 🧭 Navigation
 def main_router():
-    page = st.sidebar.radio("🔍 Select Page", ["🏠 Segmentation App", "📘 About Marine Debris"])
+    page = st.sidebar.radio("🔍 Select Page", ["📘 About Marine Debris", "🏠 Segmentation App"])
     
     if page == "📘 About Marine Debris":
         about_page()
