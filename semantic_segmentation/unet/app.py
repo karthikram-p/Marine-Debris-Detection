@@ -191,55 +191,103 @@ def main():
         os.unlink(tiff_path)
 
 def about_page():
-    st.title("📘 About Marine Debris")
+    st.title("📘 About Marine Debris Detection")
     st.markdown("---")
 
     st.markdown("""
     ### 🌊 What is Marine Debris?
-    Marine debris refers to human-created waste that has been deliberately or accidentally released into a lake, sea, ocean, or waterway. It includes plastic, metal, rubber, paper, textiles, and derelict fishing gear.
+    Marine debris refers to human-created waste that ends up in oceans, seas, lakes, and waterways—intentionally or unintentionally. Common types include:
+    - Plastics (bags, bottles, microplastics)
+    - Abandoned fishing gear (ghost nets)
+    - Rubber, glass, metal, and textiles
 
-    Most marine debris is **plastic**, which does not biodegrade but instead breaks down into smaller pieces known as **microplastics**.
+    Most marine debris, especially plastic, **does not biodegrade**. Instead, it breaks down into smaller fragments called **microplastics**, which can be ingested by marine animals and even enter the human food chain.
 
     ---
 
     ### ♻️ Why Does It Matter?
-    - Harms marine wildlife (entanglement, ingestion)
-    - Destroys habitats like coral reefs and mangroves
-    - Disrupts navigation and commercial shipping
-    - Enters the food chain — impacting human health
+    - 🐢 **Wildlife Impact:** Animals can become entangled or mistake debris for food.
+    - 🪸 **Habitat Destruction:** Coral reefs and mangroves are especially vulnerable.
+    - ⚓ **Navigation Hazards:** Floating debris can damage boats and ships.
+    - 🧬 **Human Health Risk:** Microplastics have been detected in seafood and even drinking water.
 
     ---
 
-    ### 🛰️ How Can Remote Sensing Help?
-    Using satellite and airborne imagery combined with **semantic segmentation** (like U-Net), we can:
-    - Detect and map floating debris
-    - Monitor accumulation over time
-    - Assist in targeted clean-up operations
-    - Support environmental policy decisions
+    ### 🛰️ Role of Remote Sensing & Deep Learning
+    **Remote sensing** using satellites and drones, when combined with **semantic segmentation models** like **U-Net++**, can:
+    - Detect marine debris in multi-spectral satellite images
+    - Classify pixels into debris types or regions
+    - Monitor temporal trends in pollution
+    - Guide clean-up missions and policy planning
 
     ---
 
-    ### 🧠 Model Used in This App
-    This app uses a **U-Net++ deep learning model** trained to identify marine debris from multi-band satellite TIFF imagery.
+    ### 🧠 About the Model
+    This app uses a custom-trained **U-Net++ (nested U-Net)** model, fine-tuned on multi-band satellite TIFF images.
 
-    You can upload your own imagery, test sample images, and download both the prediction and a styled QGIS file for visualization.
+    **Input:** Multi-band (11-channel) imagery  
+    **Output:** Pixel-level classification of debris types  
+    **Framework:** PyTorch  
 
     ---
 
-    📚 **Learn more:**
-    - [NOAA Marine Debris Program](https://marinedebris.noaa.gov/)
-    - [UNEP Clean Seas Campaign](https://www.cleanseas.org/)
+    ### 📦 Dataset Information
+
+    #### 🧪 MARIDA Dataset
+    The model is trained using the **MARIDA (MARine Debris Archive)** dataset — the **first open benchmark** for marine debris detection using **Sentinel-2 satellite imagery**.
+    
+    - Developed by **GEOMAR Helmholtz Centre for Ocean Research Kiel**
+    - Provides labeled samples across **five classes**: marine debris, ships, clean water, natural organic material (NOM), and Sargassum
+    - Includes **polygon annotations** and corresponding raster masks
+    - Offers **1000+ annotations** from global coastal regions
+    - Designed for training, validating, and benchmarking semantic segmentation models
+
+    #### 🛰️ Other Sources
+    - Sentinel-2 and PlanetScope imagery
+    - Preprocessing steps: cloud masking, atmospheric correction, band normalization
+
+    ---
+
+    ### 🗺️ Visualizing Results with QGIS
+    [**QGIS**](https://qgis.org/en/site/) is a powerful, open-source Geographic Information System for viewing, editing, and analyzing geospatial data.
+
+    **How to visualize your results:**
+    1. Download and install QGIS from the official site
+    2. Open the `segmentation_output.tif` file
+    3. Load the provided `.qml` file to apply class-based color mapping
+    4. Overlay with basemaps, vector layers, or shipping lanes for deeper analysis
+
+    **Use Cases in QGIS:**
+    - Monitor marine debris hotspots over time
+    - Integrate with environmental data layers
+    - Generate maps for policy briefings or academic reports
+    - Evaluate proximity to shipping routes or coastal cities
+
+    ---
+
+    ### 📘 Learn More
+
+    - 🌐 [NOAA Marine Debris Program](https://marinedebris.noaa.gov/)
+    - 🌐 [UNEP Clean Seas Campaign](https://www.cleanseas.org/)
+    - 📊 [MARIDA Dataset on Zenodo](https://zenodo.org/record/7075396)
+    - 📄 [MARIDA Paper – “MARIDA: A Benchmark for Marine Debris Detection from Sentinel-2 Remote Sensing Data”](https://arxiv.org/abs/2211.04768)
+    - 📚 [QGIS Documentation](https://docs.qgis.org/)
+    - 🛰️ [ESA Sentinel Hub – Open Access Earth Observation Data](https://www.sentinel-hub.com/)
+    - 🧠 [U-Net++: Nested U-Net for Medical Image Segmentation](https://arxiv.org/abs/1807.10165)
+
+    ---
     """)
+
 
 
 # 🧭 Navigation
 def main_router():
     page = st.sidebar.radio("🔍 Select Page", ["🏠 Segmentation App", "📘 About Marine Debris"])
     
-    if page == "🏠 Segmentation App":
-        main()
-    elif page == "📘 About Marine Debris":
+    if page == "📘 About Marine Debris":
         about_page()
+    elif page == "🏠 Segmentation App":
+        main()
 
 # 🔁 Run the router instead of directly calling main()
 if __name__ == "__main__":
