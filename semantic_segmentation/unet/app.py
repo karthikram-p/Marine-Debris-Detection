@@ -121,7 +121,7 @@ def main():
     st.title("🌊 Marine Debris Semantic Segmentation with U-Net")
 
     with st.expander("📦 Download Sample TIFF Images"):
-        st.write("Need data to test? Download up to 20 sample multi-band TIFF images to try out the model.")
+        st.write("Need data to test? Download samples of multi-band TIFF ocean images to try out the model.")
         try:
             zip_path = zip_sample_images()
             with open(zip_path, "rb") as zf:
@@ -169,6 +169,22 @@ def main():
                 file_name="segmentation_output.tif",
                 mime="image/tiff"
             )
+
+        # Add QGIS color mask mapping style (.qml)
+        qml_path = os.path.join(os.path.dirname(__file__), "qgis_color_mask_mapping.qml")
+        if os.path.exists(qml_path):
+            st.markdown("### 🎨 Apply Colors in QGIS")
+            st.markdown("Use this QML file to apply class-specific colors in QGIS after loading the segmented TIFF.")
+            with open(qml_path, "rb") as style_file:
+                st.download_button(
+                    label="🎨 Download QGIS Style (.qml)",
+                    data=style_file,
+                    file_name="qgis_color_mask_mapping.qml",
+                    mime="text/xml"
+                )
+        else:
+            st.warning("⚠️ QML style file not found.")
+
 
         # Clean up the temporary file
         os.unlink(temp_file_path)
