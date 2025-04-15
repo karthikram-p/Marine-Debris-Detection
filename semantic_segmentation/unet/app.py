@@ -10,7 +10,7 @@ import glob
 
 st.set_page_config(
         page_title="Marine Debris Detection",  # Title of the browser tab
-        page_icon="🌊",  # Favicon (can be an emoji or path to an image)
+        page_icon="favicon.png",  # Favicon (can be an emoji or path to an image)
         layout="wide"  # Optional: Set the layout (either wide or centered)
     )
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
