@@ -9,7 +9,7 @@ from zipfile import ZipFile
 import glob
 
 st.set_page_config(
-        page_title="Marine Debris Detection",  # Title of the browser tab
+        page_title="AquaScan",  # Title of the browser tab
         page_icon="semantic_segmentation/unet/favicon.png",  # Favicon (can be an emoji or path to an image)
         layout="wide"  # Optional: Set the layout (either wide or centered)
     )
@@ -177,7 +177,8 @@ def main():
     </style>
     """, unsafe_allow_html=True)
 
-    st.title("Marine Debris Semantic Segmentation with U-Net")
+    st.title("AquaScan :")
+    st.subheader(" Marine Debris Semantic Segmentation with U-Net")
 
     with st.expander("Download Sample TIFF Images"):
         st.write("Need data to test? Download samples of multi-band TIFF ocean images to try out the model.")
