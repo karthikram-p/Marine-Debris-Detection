@@ -117,6 +117,11 @@ def zip_sample_images(folder_path="semantic_segmentation/unet/sample_data", zip_
 
 
 def main():
+    st.set_page_config(
+        page_title="Marine Debris Detection",  # Title of the browser tab
+        page_icon=":wave:",  # Favicon (can be an emoji or path to an image)
+        layout="wide"  # Optional: Set the layout (either wide or centered)
+    )
     # Inject CSS into the Streamlit app
     st.markdown("""
     <style>
