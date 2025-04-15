@@ -10,7 +10,7 @@ import glob
 
 st.set_page_config(
         page_title="Marine Debris Detection",  # Title of the browser tab
-        page_icon=":wave:",  # Favicon (can be an emoji or path to an image)
+        page_icon="🌊",  # Favicon (can be an emoji or path to an image)
         layout="wide"  # Optional: Set the layout (either wide or centered)
     )
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -177,10 +177,9 @@ def main():
     </style>
     """, unsafe_allow_html=True)
 
-    st.title("🌊 Marine Debris Semantic Segmentation with U-Net")
-    st.markdown('<div class="banner">Detecting Marine Debris from Satellite Images</div>', unsafe_allow_html=True)
+    st.title("Marine Debris Semantic Segmentation with U-Net")
 
-    with st.expander("📦 Download Sample TIFF Images"):
+    with st.expander("Download Sample TIFF Images"):
         st.write("Need data to test? Download samples of multi-band TIFF ocean images to try out the model.")
         try:
             zip_path = zip_sample_images()
@@ -232,7 +231,7 @@ def main():
         # Add QGIS color mask mapping style (.qml)
         qml_path = os.path.join(os.path.dirname(__file__), "qgis_color_mask_mapping.qml")
         if os.path.exists(qml_path):
-            st.markdown("### 🎨 Apply Colors in QGIS")
+            st.markdown("### 🎨 Apply Colors according to the predicted classes in QGIS")
             st.markdown("Use this QML file to apply class-specific colors in QGIS after loading the segmented TIFF.")
             with open(qml_path, "rb") as style_file:
                 st.download_button(
@@ -251,22 +250,6 @@ def about_page():
     # Inject custom CSS styling
     st.markdown("""
     <style>
-    .about-container {
-        background-color: #f9f9fc;
-        padding: 2rem;
-        border-radius: 12px;
-        box-shadow: 0 8px 16px rgba(0,0,0,0.05);
-        font-family: 'Segoe UI', sans-serif;
-        color: #333;
-    }
-    .about-container h3 {
-        color: #004080;
-        margin-top: 2rem;
-        margin-bottom: 1rem;
-    }
-    .about-container ul {
-        margin-left: 1.2rem;
-    }
     .about-image {
         margin: 1rem 0;
         border-radius: 10px;
@@ -284,14 +267,13 @@ def about_page():
     """, unsafe_allow_html=True)
 
     # Title
-    st.markdown("<div class='about-container'>", unsafe_allow_html=True)
-    st.title("📘 About Marine Debris Detection")
+    st.title("About Marine Debris Detection")
 
     st.markdown("---", unsafe_allow_html=True)
 
     # Section: What is Marine Debris?
     st.markdown("""
-    <h3>🌊 What is Marine Debris?</h3>
+    <h3>What is Marine Debris?</h3>
     <p>Marine debris refers to human-created waste that ends up in oceans, seas, lakes, and waterways—intentionally or unintentionally.</p>
     <ul>
         <li>Plastics (bags, bottles, microplastics)</li>
@@ -307,7 +289,7 @@ def about_page():
 
     # Section: Why It Matters
     st.markdown("""
-    <h3>♻️ Why Does It Matter?</h3>
+    <h3>Why Does It Matter?</h3>
     <ul>
         <li>🐢 <strong>Wildlife Impact:</strong> Animals can become entangled or mistake debris for food.</li>
         <li>🪸 <strong>Habitat Destruction:</strong> Coral reefs and mangroves are especially vulnerable.</li>
@@ -322,7 +304,7 @@ def about_page():
 
     # Section: Role of AI
     st.markdown("""
-    <h3>🛰️ Role of Remote Sensing & Deep Learning</h3>
+    <h3>Role of Remote Sensing & Deep Learning</h3>
     <p><strong>Remote sensing</strong> using satellites and drones, combined with <strong>semantic segmentation models</strong> like <strong>U-Net++</strong>, can:</p>
     <ul>
         <li>Detect marine debris in multi-spectral satellite images</li>
@@ -338,7 +320,7 @@ def about_page():
 
     # Section: Model Info
     st.markdown("""
-    <h3>🧠 About the Model</h3>
+    <h3>About the Model</h3>
     <p>This app uses a custom-trained <strong>U-Net++</strong> model, fine-tuned on multi-band satellite TIFF images.</p>
     <ul>
         <li><strong>Input:</strong> Multi-band (11-channel) imagery</li>
@@ -353,7 +335,7 @@ def about_page():
 
     # Section: Dataset
     st.markdown("""
-    <h3>📦 Dataset: MARIDA</h3>
+    <h3>Dataset: MARIDA</h3>
     <p>The model is trained using the <strong>MARIDA (MARine Debris Archive)</strong> dataset:</p>
     <ul>
         <li>Developed by GEOMAR Helmholtz Centre for Ocean Research Kiel</li>
@@ -369,7 +351,7 @@ def about_page():
 
     # Section: QGIS
     st.markdown("""
-    <h3>🗺️ Visualizing Results with QGIS</h3>
+    <h3>Visualizing Results with QGIS</h3>
     <p><strong>QGIS</strong> is an open-source Geographic Information System for geospatial analysis.</p>
     <p><strong>Steps to visualize:</strong></p>
     <ol>
@@ -386,7 +368,7 @@ def about_page():
 
     # Section: Learn More
     st.markdown("""
-    <h3>📘 Learn More</h3>
+    <h3>Learn More</h3>
     <ul>
         <li>🌐 <a class='about-link' href='https://marinedebris.noaa.gov/' target='_blank'>NOAA Marine Debris Program</a></li>
         <li>🌐 <a class='about-link' href='https://www.cleanseas.org/' target='_blank'>UNEP Clean Seas Campaign</a></li>
