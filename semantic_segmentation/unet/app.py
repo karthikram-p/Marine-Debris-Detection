@@ -203,6 +203,8 @@ def about_page():
 
     Most marine debris, especially plastic, **does not biodegrade**. Instead, it breaks down into smaller fragments called **microplastics**, which can be ingested by marine animals and even enter the human food chain.
 
+    ![Marine Debris Examples](https://marinedebris.noaa.gov/sites/default/files/TrashIslandPlastic_0.jpg)
+
     ---
 
     ### ♻️ Why Does It Matter?
@@ -210,6 +212,8 @@ def about_page():
     - 🪸 **Habitat Destruction:** Coral reefs and mangroves are especially vulnerable.
     - ⚓ **Navigation Hazards:** Floating debris can damage boats and ships.
     - 🧬 **Human Health Risk:** Microplastics have been detected in seafood and even drinking water.
+
+    ![Turtle Entangled in Debris](https://marinedebris.noaa.gov/sites/default/files/styles/featured_image/public/TurtleEntangled_DerelictGear_NOAA.jpg)
 
     ---
 
@@ -220,6 +224,8 @@ def about_page():
     - Monitor temporal trends in pollution
     - Guide clean-up missions and policy planning
 
+    ![Sentinel-2 Satellite](https://upload.wikimedia.org/wikipedia/commons/thumb/3/35/Sentinel-2.svg/1920px-Sentinel-2.svg.png)
+
     ---
 
     ### 🧠 About the Model
@@ -228,6 +234,8 @@ def about_page():
     **Input:** Multi-band (11-channel) imagery  
     **Output:** Pixel-level classification of debris types  
     **Framework:** PyTorch  
+
+    ![U-Net++ Architecture](https://miro.medium.com/v2/resize:fit:828/format:webp/1*U7SuFqqvhd-RFO1U9Eo8bA.png)
 
     ---
 
@@ -241,6 +249,8 @@ def about_page():
     - Includes **polygon annotations** and corresponding raster masks
     - Offers **1000+ annotations** from global coastal regions
     - Designed for training, validating, and benchmarking semantic segmentation models
+
+    ![MARIDA Sample Data](https://marida.cs.uni-tuebingen.de/images/figure1.png)
 
     #### 🛰️ Other Sources
     - Sentinel-2 and PlanetScope imagery
@@ -263,6 +273,8 @@ def about_page():
     - Generate maps for policy briefings or academic reports
     - Evaluate proximity to shipping routes or coastal cities
 
+    ![QGIS Interface](https://docs.qgis.org/3.28/en/_images/introduction.png)
+
     ---
 
     ### 📘 Learn More
@@ -277,6 +289,7 @@ def about_page():
 
     ---
     """)
+
 
 
 
