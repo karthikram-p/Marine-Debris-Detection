@@ -120,7 +120,7 @@ def zip_sample_images(folder_path=r"Marine_Debris_Detection\semantic_segmentatio
 def main():
     st.title("🌊 Marine Debris Semantic Segmentation with U-Net")
 
-    with st.expander("📦 Download Sample TIFF Images (20 max)"):
+    with st.expander("📦 Download Sample TIFF Images"):
         st.write("Need data to test? Download up to 20 sample multi-band TIFF images to try out the model.")
         try:
             zip_path = zip_sample_images()
