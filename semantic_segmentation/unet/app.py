@@ -7,19 +7,28 @@ import matplotlib.pyplot as plt
 import rasterio
 from zipfile import ZipFile
 import glob
+from streamlit_lottie import st_lottie
+import json
+import requests
 
+# Configure page settings
+st.set_page_config(
+    page_title="Marine Debris Detection 🌊",
+    page_icon="🌊",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-st.write(f"🔍 Using device: {device}")
 
 INPUT_CHANNELS = 11
 OUTPUT_CLASSES = 11
 HIDDEN_CHANNELS = 16  
 CHECKPOINT_PATH = "semantic_segmentation/unet/trained_models/best_model_marine_debris.pth"
 
-# Import band statistics
 from dataloader import bands_mean, bands_std
 from unet_plus_plus import UNetPlusPlus
+
 
 @st.cache_resource
 def load_model():
@@ -38,17 +47,12 @@ def load_model():
     return model
 
 def load_tiff_image(uploaded_file):
-    # Save the uploaded file to a temporary location
     with tempfile.NamedTemporaryFile(delete=False, suffix=".tif") as temp_file:
         temp_file.write(uploaded_file.read())
         temp_file_path = temp_file.name
     
-    # Open the TIFF file with rasterio
     with rasterio.open(temp_file_path) as ds:
-        # Read all bands into a numpy array (bands, height, width)
-        image_data = ds.read()  # Shape: (bands, height, width)
-        
-        # Get geotransform and projection for output
+        image_data = ds.read()
         geo_transform = ds.transform
         projection = ds.crs.to_wkt() if ds.crs else None
 
@@ -56,13 +60,10 @@ def load_tiff_image(uploaded_file):
 
 def preprocess_image(image):
     img = np.array(image).astype(np.float32)
-
     nan_mask = np.isnan(img)
     mean_values = np.tile(bands_mean[:, None, None], (1, img.shape[1], img.shape[2]))
     img = np.where(nan_mask, mean_values, img)
-
     img = (img - bands_mean[:, None, None]) / bands_std[:, None, None]
-
     img_tensor = torch.tensor(img).unsqueeze(0).to(device)
     return img_tensor
 
@@ -71,15 +72,12 @@ def predict(image_tensor, model):
         logits = model(image_tensor)
     probabilities = torch.softmax(logits, dim=1)
     predicted_mask = torch.argmax(probabilities, dim=1).squeeze(0).cpu().numpy()
-    
     mapped_mask = predicted_mask + 1
     return mapped_mask
 
 def save_prediction_as_tiff(predicted_mask, geo_transform, projection):
     temp_tiff_path = tempfile.mktemp(suffix=".tif")
     rows, cols = predicted_mask.shape
-    
-    # Define the output profile
     profile = {
         'driver': 'GTiff',
         'height': rows,
@@ -90,18 +88,13 @@ def save_prediction_as_tiff(predicted_mask, geo_transform, projection):
         'crs': projection
     }
 
-    # Write the predicted mask to a GeoTIFF
     with rasterio.open(temp_tiff_path, 'w', **profile) as dst:
         dst.write(predicted_mask.astype(np.uint8), 1)
 
-    # Ensure the file is readable
     os.chmod(temp_tiff_path, 0o666)
     return temp_tiff_path
 
 def zip_sample_images(folder_path="semantic_segmentation/unet/sample_data", zip_name="sample_images.zip"):
-    """
-    Create a ZIP file containing sample TIFF images from the specified folder.
-    """
     temp_zip_path = os.path.join(tempfile.gettempdir(), zip_name)
     if not os.path.exists(folder_path):
         raise FileNotFoundError(f"Sample folder '{folder_path}' does not exist.")
@@ -111,34 +104,47 @@ def zip_sample_images(folder_path="semantic_segmentation/unet/sample_data", zip_
         if not tiff_files:
             raise FileNotFoundError(f"No TIFF files found in the folder '{folder_path}'.")
         
-        for file_path in tiff_files[:20]:  # Limit to 20 files
+        for file_path in tiff_files[:20]:
             zipf.write(file_path, os.path.basename(file_path))
     
     return temp_zip_path
 
+# Load Lottie animation from URL
+def load_lottieurl(url: str):
+    r = requests.get(url)
+    if r.status_code != 200:
+        return None
+    return r.json()
 
+# ----------------------------- Main UI Page ----------------------------- #
 def main():
-    st.title("🌊 Marine Debris Semantic Segmentation with U-Net")
+    lottie_debris = load_lottieurl("https://lottie.host/5b0bc72b-f96b-4cf6-b36f-2226469912e2/VdjUnAoHPP.json")
+    st_lottie(lottie_debris, height=200, speed=1, key="debris-top")
+
+    st.markdown("<h1 style='text-align: center; color: #1f3b4d;'>🌊 Marine Debris Segmentation</h1>", unsafe_allow_html=True)
+    st.markdown("<p style='text-align: center;'>Detect marine debris from satellite images using a deep learning U-Net++ model.</p>", unsafe_allow_html=True)
+
+    st.info("🔍 Using device: **{}**".format(device))
 
     with st.expander("📦 Download Sample TIFF Images"):
-        st.write("Need data to test? Download samples of multi-band TIFF ocean images to try out the model.")
+        st.markdown("Download multi-band TIFF ocean samples to test the model.")
         try:
             zip_path = zip_sample_images()
             with open(zip_path, "rb") as zf:
                 st.download_button(
-                    label="📥 Download Sample Images ZIP",
+                    label="📥 Download Sample Images",
                     data=zf,
                     file_name="sample_images.zip",
-                    mime="application/zip"
+                    mime="application/zip",
+                    use_container_width=True
                 )
         except FileNotFoundError as e:
             st.error(f"🚨 {e}")
 
-
-    uploaded_tiff = st.file_uploader("📂 Upload Multi-Band TIFF Image", type=["tiff", "tif"])
+    uploaded_tiff = st.file_uploader("📂 Upload a Multi-Band TIFF Image", type=["tiff", "tif"])
 
     if uploaded_tiff:
-        st.subheader("🖼️ Uploaded TIFF Image")
+        st.markdown("### 🖼️ Uploaded Image Preview")
         image_data, geo_transform, projection, temp_file_path = load_tiff_image(uploaded_tiff)
 
         if image_data.shape[0] != INPUT_CHANNELS:
@@ -151,11 +157,11 @@ def main():
 
         image_tensor = preprocess_image(image_data)
 
-        st.subheader("🧠 Running Model...")
-        predicted_mask = predict(image_tensor, model)
-        st.success("✅ Prediction Complete!")
+        with st.spinner("🔍 Running model inference..."):
+            predicted_mask = predict(image_tensor, model)
+        st.success("✅ Segmentation Complete")
 
-        st.subheader("🖥️ Predicted Segmentation Mask (Grayscale)")
+        st.subheader("📊 Predicted Segmentation Mask")
         fig, ax = plt.subplots(figsize=(6, 6))
         ax.imshow(predicted_mask, cmap="gray")
         ax.axis("off")
@@ -164,159 +170,89 @@ def main():
         tiff_path = save_prediction_as_tiff(predicted_mask, geo_transform, projection)
         with open(tiff_path, "rb") as file:
             st.download_button(
-                label="📥 Download Segmentation TIFF",
+                label="📥 Download Segmentation Mask (TIFF)",
                 data=file,
                 file_name="segmentation_output.tif",
-                mime="image/tiff"
+                mime="image/tiff",
+                use_container_width=True
             )
 
-        # Add QGIS color mask mapping style (.qml)
         qml_path = os.path.join(os.path.dirname(__file__), "qgis_color_mask_mapping.qml")
         if os.path.exists(qml_path):
-            st.markdown("### 🎨 Apply Colors in QGIS")
-            st.markdown("Use this QML file to apply class-specific colors in QGIS after loading the segmented TIFF.")
             with open(qml_path, "rb") as style_file:
                 st.download_button(
-                    label="🎨 Download QGIS Style (.qml)",
+                    label="🎨 Download QGIS Style File (.qml)",
                     data=style_file,
                     file_name="qgis_color_mask_mapping.qml",
-                    mime="text/xml"
+                    mime="text/xml",
+                    use_container_width=True
                 )
         else:
-            st.warning("⚠️ QML style file not found.")
+            st.warning("⚠️ QGIS style file not found.")
 
-
-        # Clean up the temporary file
         os.unlink(temp_file_path)
         os.unlink(tiff_path)
 
-import streamlit as st
 
 def about_page():
-    st.title("📘 About Marine Debris Detection")
+    st.markdown("<h1 style='color:#1f3b4d'>📘 About Marine Debris Detection</h1>", unsafe_allow_html=True)
+
+    cols = st.columns([1, 2])
+    with cols[0]:
+        st.image("https://seahistory.org/wp-content/uploads/marine-debris.jpg", use_column_width=True)
+    with cols[1]:
+        st.markdown("""
+        ### 🌊 What is Marine Debris?
+        - Plastics (bags, bottles, microplastics)
+        - Ghost fishing nets
+        - Rubber, glass, metal, textiles
+        - **Non-biodegradable** materials
+        
+        It poses serious risks to marine life, ecosystems, and even human health.
+        """)
+
     st.markdown("---")
+    st.image("https://marine-debris-site-s3fs.s3.us-west-1.amazonaws.com/s3fs-public/sea_turtle_entangled.jpg?VersionId=26WuPYKaZUe82w4GutIHwwK9adTByMaL", width=700)
 
     st.markdown("""
-    ### 🌊 What is Marine Debris?
-    Marine debris refers to human-created waste that ends up in oceans, seas, lakes, and waterways—intentionally or unintentionally. Common types include:
-    - Plastics (bags, bottles, microplastics)
-    - Abandoned fishing gear (ghost nets)
-    - Rubber, glass, metal, and textiles
+    ### 🧠 Why Deep Learning?
+    - 🛰️ Detect marine debris via satellite images
+    - 🧠 Segment and classify pixel data
+    - 📈 Track pollution over time
+    - 🧹 Plan cleanup & conservation missions
+    """)
 
-    Most marine debris, especially plastic, **does not biodegrade**. Instead, it breaks down into smaller fragments called **microplastics**, which can be ingested by marine animals and even enter the human food chain.
+    st.image("https://www.esa.int/var/esa/storage/images/esa_multimedia/images/2015/03/sentinel-2/15292661-1-eng-GB/Sentinel-2_pillars.jpg")
 
-    ![Marine Debris Examples](https://seahistory.org/wp-content/uploads/marine-debris.jpg)
-    *Image: Marine Debris [Source: national Maritime History Society](https://seahistory.org/sea-history-for-kids/getting-rid-of-marine-debris/)*
+    st.markdown("""
+    ### 🧪 Dataset: MARIDA
+    - Sentinel-2 based
+    - Labels: debris, ships, clean water, Sargassum, NOM
+    - Over 1000 annotated coastal samples
     """)
 
     st.markdown("---")
-
     st.markdown("""
-    ### ♻️ Why Does It Matter?
-    - 🐢 **Wildlife Impact:** Animals can become entangled or mistake debris for food.
-    - 🪸 **Habitat Destruction:** Coral reefs and mangroves are especially vulnerable.
-    - ⚓ **Navigation Hazards:** Floating debris can damage boats and ships.
-    - 🧬 **Human Health Risk:** Microplastics have been detected in seafood and even drinking water.
-
-    ![Turtle Entangled in Debris](https://marine-debris-site-s3fs.s3.us-west-1.amazonaws.com/s3fs-public/sea_turtle_entangled.jpg?VersionId=26WuPYKaZUe82w4GutIHwwK9adTByMaL)
-    *Image: Green sea turtle entangled in fishing line. [Source: NOAA Marine Debris Program](https://marinedebris.noaa.gov/entangled-green-sea-turtle)*
+    ### 🗺️ Visualize in QGIS
+    - Load `segmentation_output.tif`
+    - Apply `qgis_color_mask_mapping.qml`
+    - Overlay with maps, ports, or zones
     """)
 
-    st.markdown("---")
+    st.image("https://upload.wikimedia.org/wikipedia/commons/5/5a/QGIS_Interface_Screenshot_with_Map_of_Median_Income_in_Houston_%282010%29.png")
 
-    st.markdown("""
-    ### 🛰️ Role of Remote Sensing & Deep Learning
-    **Remote sensing** using satellites and drones, when combined with **semantic segmentation models** like **U-Net++**, can:
-    - Detect marine debris in multi-spectral satellite images
-    - Classify pixels into debris types or regions
-    - Monitor temporal trends in pollution
-    - Guide clean-up missions and policy planning
-
-    ![Sentinel-2 Satellite](https://www.esa.int/var/esa/storage/images/esa_multimedia/images/2015/03/sentinel-2/15292661-1-eng-GB/Sentinel-2_pillars.jpg)
-    *Image: Sentinel-2 Satellite. [Source: European Space Agency](https://www.esa.int/Applications/Observing_the_Earth/Copernicus/Sentinel-2)*
-    """)
-
-    st.markdown("---")
-
-    st.markdown("""
-    ### 🧠 About the Model
-    This app uses a custom-trained **U-Net++ (nested U-Net)** model, fine-tuned on multi-band satellite TIFF images.
-
-    **Input:** Multi-band (11-channel) imagery  
-    **Output:** Pixel-level classification of debris types  
-    **Framework:** PyTorch  
-
-    ![U-Net++ Architecture](https://lmb.informatik.uni-freiburg.de/people/ronneber/u-net/u-net-architecture.png)
-    *Image: U-Net Architecture. [Source: University of Freiburg](https://lmb.informatik.uni-freiburg.de/people/ronneber/u-net/)*
-    """)
-
-    st.markdown("---")
-
-    st.markdown("""
-    ### 📦 Dataset Information
-
-    #### 🧪 MARIDA Dataset
-    The model is trained using the **MARIDA (MARine Debris Archive)** dataset — the **first open benchmark** for marine debris detection using **Sentinel-2 satellite imagery**.
-
-    - Developed by **GEOMAR Helmholtz Centre for Ocean Research Kiel**
-    - Provides labeled samples across **five classes**: marine debris, ships, clean water, natural organic material (NOM), and Sargassum
-    - Includes **polygon annotations** and corresponding raster masks
-    - Offers **1000+ annotations** from global coastal regions
-    - Designed for training, validating, and benchmarking semantic segmentation models
-
-    ![MARIDA Sample Data](https://production-media.paperswithcode.com/datasets/1b137f41-d688-438b-9daa-9d3b5d5c3d55.jpg)
-    *Image: MARIDA Dataset Sample. [Source: Zenodo](https://zenodo.org/record/5151941)*
-    """)
-
-    st.markdown("---")
-
-    st.markdown("""
-    ### 🗺️ Visualizing Results with QGIS
-    [**QGIS**](https://qgis.org/en/site/) is a powerful, open-source Geographic Information System for viewing, editing, and analyzing geospatial data.
-
-    **How to visualize your results:**
-    1. Download and install QGIS from the official site
-    2. Open the `segmentation_output.tif` file
-    3. Load the provided `.qml` file to apply class-based color mapping
-    4. Overlay with basemaps, vector layers, or shipping lanes for deeper analysis
-
-    **Use Cases in QGIS:**
-    - Monitor marine debris hotspots over time
-    - Integrate with environmental data layers
-    - Generate maps for policy briefings or academic reports
-    - Evaluate proximity to shipping routes or coastal cities
-
-    ![QGIS Interface](https://upload.wikimedia.org/wikipedia/commons/5/5a/QGIS_Interface_Screenshot_with_Map_of_Median_Income_in_Houston_%282010%29.png)
-    *Image: QGIS Interface. [Source: Wikimedia Commons](https://commons.wikimedia.org/wiki/File:QGIS_3.10_Overview.png)*
-    """)
-
-    st.markdown("---")
-
-    st.markdown("""
-    ### 📘 Learn More
-
-    - 🌐 [NOAA Marine Debris Program](https://marinedebris.noaa.gov/)
-    - 🌐 [UNEP Clean Seas Campaign](https://www.cleanseas.org/)
-    - 📊 [MARIDA Dataset on Zenodo](https://zenodo.org/record/5151941)
-    - 📄 [MARIDA Paper – “MARIDA: A Benchmark for Marine Debris Detection from Sentinel-2 Remote Sensing Data”](https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0262247)
-    - 📚 [QGIS Documentation](https://docs.qgis.org/)
-    - 🛰️ [ESA Sentinel Hub – Open Access Earth Observation Data](https://www.sentinel-hub.com/)
-    - 🧠 [U-Net++: Nested U-Net for Medical Image Segmentation](https://lmb.informatik.uni-freiburg.de/people/ronneber/u-net/)
-    """)
-
-    st.markdown("---")
+    st.markdown("🔗 [More Resources](https://marinedebris.noaa.gov/) | [QGIS Docs](https://docs.qgis.org/)")
 
 
-# 🧭 Navigation
 def main_router():
-    page = st.sidebar.radio("🔍 Select Page", ["📘 About Marine Debris", "🏠 Segmentation App"])
-    
+    st.sidebar.markdown("## 🔍 Navigation")
+    page = st.sidebar.radio("Go to", ["🏠 Segmentation App", "📘 About Marine Debris"])
+
     if page == "📘 About Marine Debris":
         about_page()
     elif page == "🏠 Segmentation App":
         main()
 
-# 🔁 Run the router instead of directly calling main()
+
 if __name__ == "__main__":
     main_router()
-
