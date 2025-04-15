@@ -205,8 +205,8 @@ def about_page():
 
     Most marine debris, especially plastic, **does not biodegrade**. Instead, it breaks down into smaller fragments called **microplastics**, which can be ingested by marine animals and even enter the human food chain.
 
-    ![Marine Debris Examples](https://marine-debris-site-s3fs.s3.us-west-1.amazonaws.com/s3fs-public/crab_entangled.jpg?VersionId=DHAMCi3S0ct7NX6SZYLc516AF3CRuAkJ)
-    *Image: Crab entangled in derelict fishing gear. [Source: NOAA Marine Debris Program](https://marinedebris.noaa.gov/multimedia/photos/types)*
+    ![Marine Debris Examples](https://seahistory.org/wp-content/uploads/marine-debris.jpg)
+    *Image: Marine Debris [Source: national Maritime History Society](https://seahistory.org/sea-history-for-kids/getting-rid-of-marine-debris/)*
     """)
 
     st.markdown("---")
@@ -218,7 +218,7 @@ def about_page():
     - ⚓ **Navigation Hazards:** Floating debris can damage boats and ships.
     - 🧬 **Human Health Risk:** Microplastics have been detected in seafood and even drinking water.
 
-    ![Turtle Entangled in Debris](https://marinedebris.noaa.gov/sites/default/files/sea_turtle_entangled.jpg)
+    ![Turtle Entangled in Debris](https://marine-debris-site-s3fs.s3.us-west-1.amazonaws.com/s3fs-public/sea_turtle_entangled.jpg?VersionId=26WuPYKaZUe82w4GutIHwwK9adTByMaL)
     *Image: Green sea turtle entangled in fishing line. [Source: NOAA Marine Debris Program](https://marinedebris.noaa.gov/entangled-green-sea-turtle)*
     """)
 
@@ -232,7 +232,7 @@ def about_page():
     - Monitor temporal trends in pollution
     - Guide clean-up missions and policy planning
 
-    ![Sentinel-2 Satellite](https://www.esa.int/var/esa/storage/images/esa_multimedia/images/2015/06/sentinel-2/15449462-1-eng-GB/Sentinel-2_pillars.jpg)
+    ![Sentinel-2 Satellite](https://www.esa.int/var/esa/storage/images/esa_multimedia/images/2015/03/sentinel-2/15292661-1-eng-GB/Sentinel-2_pillars.jpg)
     *Image: Sentinel-2 Satellite. [Source: European Space Agency](https://www.esa.int/Applications/Observing_the_Earth/Copernicus/Sentinel-2)*
     """)
 
@@ -264,7 +264,7 @@ def about_page():
     - Offers **1000+ annotations** from global coastal regions
     - Designed for training, validating, and benchmarking semantic segmentation models
 
-    ![MARIDA Sample Data](https://zenodo.org/record/5151941/files/marida_sample.png)
+    ![MARIDA Sample Data](https://production-media.paperswithcode.com/datasets/1b137f41-d688-438b-9daa-9d3b5d5c3d55.jpg)
     *Image: MARIDA Dataset Sample. [Source: Zenodo](https://zenodo.org/record/5151941)*
     """)
 
@@ -286,7 +286,7 @@ def about_page():
     - Generate maps for policy briefings or academic reports
     - Evaluate proximity to shipping routes or coastal cities
 
-    ![QGIS Interface](https://upload.wikimedia.org/wikipedia/commons/3/3b/QGIS_3.10_Overview.png)
+    ![QGIS Interface](https://upload.wikimedia.org/wikipedia/commons/5/5a/QGIS_Interface_Screenshot_with_Map_of_Median_Income_in_Houston_%282010%29.png)
     *Image: QGIS Interface. [Source: Wikimedia Commons](https://commons.wikimedia.org/wiki/File:QGIS_3.10_Overview.png)*
     """)
 
