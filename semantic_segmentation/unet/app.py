@@ -158,7 +158,8 @@ def main():
             transform: scale(1.05);
         }
 
-        /* 3D Effect on Image */
+        /* Removed image animation effect */
+        /* 
         .stImage {
             transform: perspective(500px) rotateY(10deg);
             transition: transform 0.5s ease-in-out;
@@ -167,8 +168,10 @@ def main():
         .stImage:hover {
             transform: perspective(500px) rotateY(0deg);
         }
+        */
     </style>
     """, unsafe_allow_html=True)
+
     st.title("🌊 Marine Debris Semantic Segmentation with U-Net")
     st.markdown('<div class="banner">🚢 Detecting Marine Debris from Satellite Images 🌍</div>', unsafe_allow_html=True)
 
@@ -185,7 +188,6 @@ def main():
                 )
         except FileNotFoundError as e:
             st.error(f"🚨 {e}")
-
 
     uploaded_tiff = st.file_uploader("📂 Upload Multi-Band TIFF Image", type=["tiff", "tif"])
 
@@ -237,37 +239,163 @@ def main():
         else:
             st.warning("⚠️ QML style file not found.")
 
-
-        # Clean up the temporary file
         os.unlink(temp_file_path)
         os.unlink(tiff_path)
 
-import streamlit as st
-
 def about_page():
+    # Inject custom CSS styling
+    st.markdown("""
+    <style>
+    .about-container {
+        background-color: #f9f9fc;
+        padding: 2rem;
+        border-radius: 12px;
+        box-shadow: 0 8px 16px rgba(0,0,0,0.05);
+        font-family: 'Segoe UI', sans-serif;
+        color: #333;
+    }
+    .about-container h3 {
+        color: #004080;
+        margin-top: 2rem;
+        margin-bottom: 1rem;
+    }
+    .about-container ul {
+        margin-left: 1.2rem;
+    }
+    .about-image {
+        margin: 1rem 0;
+        border-radius: 10px;
+        border: 1px solid #ddd;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    .about-link {
+        color: #0066cc;
+        text-decoration: none;
+    }
+    .about-link:hover {
+        text-decoration: underline;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+
+    # Title
+    st.markdown("<div class='about-container'>", unsafe_allow_html=True)
     st.title("📘 About Marine Debris Detection")
-    st.markdown("---")
 
-    st.markdown("""<div class="about-content">
-        <h3>🌊 What is Marine Debris?</h3>
-        <p>Marine debris refers to human-created waste that ends up in oceans, seas, lakes, and waterways. It poses significant environmental threats.</p>
-    </div>""", unsafe_allow_html=True)
+    st.markdown("---", unsafe_allow_html=True)
 
-    st.markdown("---")
+    # Section: What is Marine Debris?
+    st.markdown("""
+    <h3>🌊 What is Marine Debris?</h3>
+    <p>Marine debris refers to human-created waste that ends up in oceans, seas, lakes, and waterways—intentionally or unintentionally.</p>
+    <ul>
+        <li>Plastics (bags, bottles, microplastics)</li>
+        <li>Abandoned fishing gear (ghost nets)</li>
+        <li>Rubber, glass, metal, and textiles</li>
+    </ul>
+    <p>Most marine debris, especially plastic, <strong>does not biodegrade</strong>. Instead, it breaks down into smaller fragments called <strong>microplastics</strong>, which can be ingested by marine animals and even enter the human food chain.</p>
+    <img class='about-image' src='https://seahistory.org/wp-content/uploads/marine-debris.jpg' width='100%' />
+    <p><em>Image: Marine Debris [Source: <a class='about-link' href='https://seahistory.org/sea-history-for-kids/getting-rid-of-marine-debris/' target='_blank'>National Maritime History Society</a>]</em></p>
+    """, unsafe_allow_html=True)
 
-    st.markdown("""<div class="about-content">
-        <h3>♻️ Why Does It Matter?</h3>
-        <p>Marine debris affects wildlife, habitats, human health, and navigation. It is important to take action and monitor its effects.</p>
-    </div>""", unsafe_allow_html=True)
+    st.markdown("---", unsafe_allow_html=True)
 
-    st.markdown("---")
+    # Section: Why It Matters
+    st.markdown("""
+    <h3>♻️ Why Does It Matter?</h3>
+    <ul>
+        <li>🐢 <strong>Wildlife Impact:</strong> Animals can become entangled or mistake debris for food.</li>
+        <li>🪸 <strong>Habitat Destruction:</strong> Coral reefs and mangroves are especially vulnerable.</li>
+        <li>⚓ <strong>Navigation Hazards:</strong> Floating debris can damage boats and ships.</li>
+        <li>🧬 <strong>Human Health Risk:</strong> Microplastics have been detected in seafood and even drinking water.</li>
+    </ul>
+    <img class='about-image' src='https://marine-debris-site-s3fs.s3.us-west-1.amazonaws.com/s3fs-public/sea_turtle_entangled.jpg?VersionId=26WuPYKaZUe82w4GutIHwwK9adTByMaL' width='100%' />
+    <p><em>Image: Green sea turtle entangled in fishing line. [Source: <a class='about-link' href='https://marinedebris.noaa.gov/entangled-green-sea-turtle' target='_blank'>NOAA Marine Debris Program</a>]</em></p>
+    """, unsafe_allow_html=True)
 
-    st.markdown("""<div class="about-content">
-        <h3>🛰️ Role of Remote Sensing & Deep Learning</h3>
-        <p>Using remote sensing data and deep learning techniques, we can detect marine debris and classify it in satellite images.</p>
-    </div>""", unsafe_allow_html=True)
+    st.markdown("---", unsafe_allow_html=True)
 
-    st.markdown("---")
+    # Section: Role of AI
+    st.markdown("""
+    <h3>🛰️ Role of Remote Sensing & Deep Learning</h3>
+    <p><strong>Remote sensing</strong> using satellites and drones, combined with <strong>semantic segmentation models</strong> like <strong>U-Net++</strong>, can:</p>
+    <ul>
+        <li>Detect marine debris in multi-spectral satellite images</li>
+        <li>Classify pixels into debris types or regions</li>
+        <li>Monitor temporal trends in pollution</li>
+        <li>Guide clean-up missions and policy planning</li>
+    </ul>
+    <img class='about-image' src='https://www.esa.int/var/esa/storage/images/esa_multimedia/images/2015/03/sentinel-2/15292661-1-eng-GB/Sentinel-2_pillars.jpg' width='100%' />
+    <p><em>Image: Sentinel-2 Satellite. [Source: <a class='about-link' href='https://www.esa.int/Applications/Observing_the_Earth/Copernicus/Sentinel-2' target='_blank'>ESA</a>]</em></p>
+    """, unsafe_allow_html=True)
+
+    st.markdown("---", unsafe_allow_html=True)
+
+    # Section: Model Info
+    st.markdown("""
+    <h3>🧠 About the Model</h3>
+    <p>This app uses a custom-trained <strong>U-Net++</strong> model, fine-tuned on multi-band satellite TIFF images.</p>
+    <ul>
+        <li><strong>Input:</strong> Multi-band (11-channel) imagery</li>
+        <li><strong>Output:</strong> Pixel-level classification of debris types</li>
+        <li><strong>Framework:</strong> PyTorch</li>
+    </ul>
+    <img class='about-image' src='https://lmb.informatik.uni-freiburg.de/people/ronneber/u-net/u-net-architecture.png' width='100%' />
+    <p><em>Image: U-Net Architecture. [Source: <a class='about-link' href='https://lmb.informatik.uni-freiburg.de/people/ronneber/u-net/' target='_blank'>University of Freiburg</a>]</em></p>
+    """, unsafe_allow_html=True)
+
+    st.markdown("---", unsafe_allow_html=True)
+
+    # Section: Dataset
+    st.markdown("""
+    <h3>📦 Dataset: MARIDA</h3>
+    <p>The model is trained using the <strong>MARIDA (MARine Debris Archive)</strong> dataset:</p>
+    <ul>
+        <li>Developed by GEOMAR Helmholtz Centre for Ocean Research Kiel</li>
+        <li>Classes: Marine debris, ships, clean water, natural organic material (NOM), Sargassum</li>
+        <li>Includes polygon annotations and raster masks</li>
+        <li>1000+ annotated samples from global coastal areas</li>
+    </ul>
+    <img class='about-image' src='https://production-media.paperswithcode.com/datasets/1b137f41-d688-438b-9daa-9d3b5d5c3d55.jpg' width='100%' />
+    <p><em>Image: MARIDA Dataset. [Source: <a class='about-link' href='https://zenodo.org/record/5151941' target='_blank'>Zenodo</a>]</em></p>
+    """, unsafe_allow_html=True)
+
+    st.markdown("---", unsafe_allow_html=True)
+
+    # Section: QGIS
+    st.markdown("""
+    <h3>🗺️ Visualizing Results with QGIS</h3>
+    <p><strong>QGIS</strong> is an open-source Geographic Information System for geospatial analysis.</p>
+    <p><strong>Steps to visualize:</strong></p>
+    <ol>
+        <li>Download QGIS from <a class='about-link' href='https://qgis.org/en/site/' target='_blank'>qgis.org</a></li>
+        <li>Load the segmentation_output.tif</li>
+        <li>Apply .qml file for color mapping</li>
+        <li>Overlay with basemaps or environmental layers</li>
+    </ol>
+    <img class='about-image' src='https://upload.wikimedia.org/wikipedia/commons/5/5a/QGIS_Interface_Screenshot_with_Map_of_Median_Income_in_Houston_%282010%29.png' width='100%' />
+    <p><em>Image: QGIS Interface. [Source: <a class='about-link' href='https://commons.wikimedia.org/wiki/File:QGIS_3.10_Overview.png' target='_blank'>Wikimedia Commons</a>]</em></p>
+    """, unsafe_allow_html=True)
+
+    st.markdown("---", unsafe_allow_html=True)
+
+    # Section: Learn More
+    st.markdown("""
+    <h3>📘 Learn More</h3>
+    <ul>
+        <li>🌐 <a class='about-link' href='https://marinedebris.noaa.gov/' target='_blank'>NOAA Marine Debris Program</a></li>
+        <li>🌐 <a class='about-link' href='https://www.cleanseas.org/' target='_blank'>UNEP Clean Seas Campaign</a></li>
+        <li>📊 <a class='about-link' href='https://zenodo.org/record/5151941' target='_blank'>MARIDA Dataset on Zenodo</a></li>
+        <li>📄 <a class='about-link' href='https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0262247' target='_blank'>MARIDA Paper on PLOS ONE</a></li>
+        <li>📚 <a class='about-link' href='https://docs.qgis.org/' target='_blank'>QGIS Documentation</a></li>
+        <li>🛰️ <a class='about-link' href='https://www.sentinel-hub.com/' target='_blank'>ESA Sentinel Hub</a></li>
+        <li>🧠 <a class='about-link' href='https://lmb.informatik.uni-freiburg.de/people/ronneber/u-net/' target='_blank'>U-Net++: Nested U-Net</a></li>
+    </ul>
+    """, unsafe_allow_html=True)
+
+    # Close the styled container
+    st.markdown("</div>", unsafe_allow_html=True)
+
 
 # 🧭 Navigation
 def main_router():
