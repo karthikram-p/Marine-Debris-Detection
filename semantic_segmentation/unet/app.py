@@ -190,6 +190,8 @@ def main():
         os.unlink(temp_file_path)
         os.unlink(tiff_path)
 
+import streamlit as st
+
 def about_page():
     st.title("📘 About Marine Debris Detection")
     st.markdown("---")
@@ -203,20 +205,26 @@ def about_page():
 
     Most marine debris, especially plastic, **does not biodegrade**. Instead, it breaks down into smaller fragments called **microplastics**, which can be ingested by marine animals and even enter the human food chain.
 
-    ![Marine Debris Examples](https://marinedebris.noaa.gov/sites/default/files/TrashIslandPlastic_0.jpg)
+    ![Marine Debris Examples](https://marinedebris.noaa.gov/sites/default/files/styles/featured_image/public/2019-06/CrabEntangled_DerelictGear_NOAA.jpg)
+    *Image: Crab entangled in derelict fishing gear. [Source: NOAA Marine Debris Program](https://marinedebris.noaa.gov/multimedia/photos/types)*
+    """)
 
-    ---
+    st.markdown("---")
 
+    st.markdown("""
     ### ♻️ Why Does It Matter?
     - 🐢 **Wildlife Impact:** Animals can become entangled or mistake debris for food.
     - 🪸 **Habitat Destruction:** Coral reefs and mangroves are especially vulnerable.
     - ⚓ **Navigation Hazards:** Floating debris can damage boats and ships.
     - 🧬 **Human Health Risk:** Microplastics have been detected in seafood and even drinking water.
 
-    ![Turtle Entangled in Debris](https://marinedebris.noaa.gov/sites/default/files/styles/featured_image/public/TurtleEntangled_DerelictGear_NOAA.jpg)
+    ![Turtle Entangled in Debris](https://marinedebris.noaa.gov/sites/default/files/sea_turtle_entangled.jpg)
+    *Image: Green sea turtle entangled in fishing line. [Source: NOAA Marine Debris Program](https://marinedebris.noaa.gov/entangled-green-sea-turtle)*
+    """)
 
-    ---
+    st.markdown("---")
 
+    st.markdown("""
     ### 🛰️ Role of Remote Sensing & Deep Learning
     **Remote sensing** using satellites and drones, when combined with **semantic segmentation models** like **U-Net++**, can:
     - Detect marine debris in multi-spectral satellite images
@@ -224,10 +232,13 @@ def about_page():
     - Monitor temporal trends in pollution
     - Guide clean-up missions and policy planning
 
-    ![Sentinel-2 Satellite](https://upload.wikimedia.org/wikipedia/commons/thumb/3/35/Sentinel-2.svg/1920px-Sentinel-2.svg.png)
+    ![Sentinel-2 Satellite](https://www.esa.int/var/esa/storage/images/esa_multimedia/images/2015/06/sentinel-2/15449462-1-eng-GB/Sentinel-2_pillars.jpg)
+    *Image: Sentinel-2 Satellite. [Source: European Space Agency](https://www.esa.int/Applications/Observing_the_Earth/Copernicus/Sentinel-2)*
+    """)
 
-    ---
+    st.markdown("---")
 
+    st.markdown("""
     ### 🧠 About the Model
     This app uses a custom-trained **U-Net++ (nested U-Net)** model, fine-tuned on multi-band satellite TIFF images.
 
@@ -235,29 +246,31 @@ def about_page():
     **Output:** Pixel-level classification of debris types  
     **Framework:** PyTorch  
 
-    ![U-Net++ Architecture](https://miro.medium.com/v2/resize:fit:828/format:webp/1*U7SuFqqvhd-RFO1U9Eo8bA.png)
+    ![U-Net++ Architecture](https://lmb.informatik.uni-freiburg.de/people/ronneber/u-net/u-net-architecture.png)
+    *Image: U-Net Architecture. [Source: University of Freiburg](https://lmb.informatik.uni-freiburg.de/people/ronneber/u-net/)*
+    """)
 
-    ---
+    st.markdown("---")
 
+    st.markdown("""
     ### 📦 Dataset Information
 
     #### 🧪 MARIDA Dataset
     The model is trained using the **MARIDA (MARine Debris Archive)** dataset — the **first open benchmark** for marine debris detection using **Sentinel-2 satellite imagery**.
-    
+
     - Developed by **GEOMAR Helmholtz Centre for Ocean Research Kiel**
     - Provides labeled samples across **five classes**: marine debris, ships, clean water, natural organic material (NOM), and Sargassum
     - Includes **polygon annotations** and corresponding raster masks
     - Offers **1000+ annotations** from global coastal regions
     - Designed for training, validating, and benchmarking semantic segmentation models
 
-    ![MARIDA Sample Data](https://marida.cs.uni-tuebingen.de/images/figure1.png)
+    ![MARIDA Sample Data](https://zenodo.org/record/5151941/files/marida_sample.png)
+    *Image: MARIDA Dataset Sample. [Source: Zenodo](https://zenodo.org/record/5151941)*
+    """)
 
-    #### 🛰️ Other Sources
-    - Sentinel-2 and PlanetScope imagery
-    - Preprocessing steps: cloud masking, atmospheric correction, band normalization
+    st.markdown("---")
 
-    ---
-
+    st.markdown("""
     ### 🗺️ Visualizing Results with QGIS
     [**QGIS**](https://qgis.org/en/site/) is a powerful, open-source Geographic Information System for viewing, editing, and analyzing geospatial data.
 
@@ -273,24 +286,25 @@ def about_page():
     - Generate maps for policy briefings or academic reports
     - Evaluate proximity to shipping routes or coastal cities
 
-    ![QGIS Interface](https://docs.qgis.org/3.28/en/_images/introduction.png)
+    ![QGIS Interface](https://upload.wikimedia.org/wikipedia/commons/3/3b/QGIS_3.10_Overview.png)
+    *Image: QGIS Interface. [Source: Wikimedia Commons](https://commons.wikimedia.org/wiki/File:QGIS_3.10_Overview.png)*
+    """)
 
-    ---
+    st.markdown("---")
 
+    st.markdown("""
     ### 📘 Learn More
 
     - 🌐 [NOAA Marine Debris Program](https://marinedebris.noaa.gov/)
     - 🌐 [UNEP Clean Seas Campaign](https://www.cleanseas.org/)
-    - 📊 [MARIDA Dataset on Zenodo](https://zenodo.org/record/7075396)
-    - 📄 [MARIDA Paper – “MARIDA: A Benchmark for Marine Debris Detection from Sentinel-2 Remote Sensing Data”](https://arxiv.org/abs/2211.04768)
+    - 📊 [MARIDA Dataset on Zenodo](https://zenodo.org/record/5151941)
+    - 📄 [MARIDA Paper – “MARIDA: A Benchmark for Marine Debris Detection from Sentinel-2 Remote Sensing Data”](https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0262247)
     - 📚 [QGIS Documentation](https://docs.qgis.org/)
     - 🛰️ [ESA Sentinel Hub – Open Access Earth Observation Data](https://www.sentinel-hub.com/)
-    - 🧠 [U-Net++: Nested U-Net for Medical Image Segmentation](https://arxiv.org/abs/1807.10165)
-
-    ---
+    - 🧠 [U-Net++: Nested U-Net for Medical Image Segmentation](https://lmb.informatik.uni-freiburg.de/people/ronneber/u-net/)
     """)
 
-
+    st.markdown("---")
 
 
 # 🧭 Navigation
