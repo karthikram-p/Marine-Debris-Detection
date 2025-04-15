@@ -190,5 +190,58 @@ def main():
         os.unlink(temp_file_path)
         os.unlink(tiff_path)
 
+def about_page():
+    st.title("📘 About Marine Debris")
+    st.markdown("---")
+
+    st.markdown("""
+    ### 🌊 What is Marine Debris?
+    Marine debris refers to human-created waste that has been deliberately or accidentally released into a lake, sea, ocean, or waterway. It includes plastic, metal, rubber, paper, textiles, and derelict fishing gear.
+
+    Most marine debris is **plastic**, which does not biodegrade but instead breaks down into smaller pieces known as **microplastics**.
+
+    ---
+
+    ### ♻️ Why Does It Matter?
+    - Harms marine wildlife (entanglement, ingestion)
+    - Destroys habitats like coral reefs and mangroves
+    - Disrupts navigation and commercial shipping
+    - Enters the food chain — impacting human health
+
+    ---
+
+    ### 🛰️ How Can Remote Sensing Help?
+    Using satellite and airborne imagery combined with **semantic segmentation** (like U-Net), we can:
+    - Detect and map floating debris
+    - Monitor accumulation over time
+    - Assist in targeted clean-up operations
+    - Support environmental policy decisions
+
+    ---
+
+    ### 🧠 Model Used in This App
+    This app uses a **U-Net++ deep learning model** trained to identify marine debris from multi-band satellite TIFF imagery.
+
+    You can upload your own imagery, test sample images, and download both the prediction and a styled QGIS file for visualization.
+
+    ---
+
+    📚 **Learn more:**
+    - [NOAA Marine Debris Program](https://marinedebris.noaa.gov/)
+    - [UNEP Clean Seas Campaign](https://www.cleanseas.org/)
+    """)
+
+
+# 🧭 Navigation
+def main_router():
+    page = st.sidebar.radio("🔍 Select Page", ["🏠 Segmentation App", "📘 About Marine Debris"])
+    
+    if page == "🏠 Segmentation App":
+        main()
+    elif page == "📘 About Marine Debris":
+        about_page()
+
+# 🔁 Run the router instead of directly calling main()
 if __name__ == "__main__":
-    main()
+    main_router()
+
