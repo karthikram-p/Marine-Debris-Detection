@@ -98,7 +98,7 @@ def save_prediction_as_tiff(predicted_mask, geo_transform, projection):
     os.chmod(temp_tiff_path, 0o666)
     return temp_tiff_path
 
-def zip_sample_images(folder_path=r"Marine_Debris_Detection\semantic_segmentation\unet\sample_data", zip_name="sample_images.zip"):
+def zip_sample_images(folder_path="sample_data", zip_name="sample_images.zip"):
     """
     Create a ZIP file containing sample TIFF images from the specified folder.
     """
