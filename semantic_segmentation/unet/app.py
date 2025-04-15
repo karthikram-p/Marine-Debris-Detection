@@ -205,7 +205,7 @@ def about_page():
 
     Most marine debris, especially plastic, **does not biodegrade**. Instead, it breaks down into smaller fragments called **microplastics**, which can be ingested by marine animals and even enter the human food chain.
 
-    ![Marine Debris Examples](https://marinedebris.noaa.gov/sites/default/files/styles/featured_image/public/2019-06/CrabEntangled_DerelictGear_NOAA.jpg)
+    ![Marine Debris Examples](https://marine-debris-site-s3fs.s3.us-west-1.amazonaws.com/s3fs-public/crab_entangled.jpg?VersionId=DHAMCi3S0ct7NX6SZYLc516AF3CRuAkJ)
     *Image: Crab entangled in derelict fishing gear. [Source: NOAA Marine Debris Program](https://marinedebris.noaa.gov/multimedia/photos/types)*
     """)
 
