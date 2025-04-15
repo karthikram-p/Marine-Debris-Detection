@@ -178,7 +178,7 @@ def main():
     """, unsafe_allow_html=True)
 
     st.title("🌊 Marine Debris Semantic Segmentation with U-Net")
-    st.markdown('<div class="banner">🚢 Detecting Marine Debris from Satellite Images 🌍</div>', unsafe_allow_html=True)
+    st.markdown('<div class="banner">Detecting Marine Debris from Satellite Images</div>', unsafe_allow_html=True)
 
     with st.expander("📦 Download Sample TIFF Images"):
         st.write("Need data to test? Download samples of multi-band TIFF ocean images to try out the model.")
@@ -194,7 +194,7 @@ def main():
         except FileNotFoundError as e:
             st.error(f"🚨 {e}")
 
-    uploaded_tiff = st.file_uploader("📂 Upload Multi-Band TIFF Image", type=["tiff", "tif"])
+    uploaded_tiff = st.file_uploader("Upload Multi-Band TIFF Ocean Image", type=["tiff", "tif"])
 
     if uploaded_tiff:
         st.subheader("🖼️ Uploaded TIFF Image")
