@@ -6,7 +6,7 @@ A deep learning-based solution for detecting floating marine debris from satelli
 
 ## 🚀 Deployed Web Application
 
-👉 **[Click here to launch the demo app](https://your-deployed-link.com)**  
+👉 **[Click here to launch the demo app](https://aqua-scan.streamlit.app)**  
 > Upload a Sentinel-2 image and get an instant prediction of marine debris segments.
 
 ---
@@ -36,7 +36,7 @@ UNet++ builds upon traditional U-Net by:
 ---
 
 ## 🗂️ Project Structure
-
+   
 marine-debris-detection/
 ├── assets.py # Static paths and constants
 ├── dataloader.py # Data augmentation and loading pipeline
@@ -71,69 +71,46 @@ marine-debris-detection/
    ```bash
    git clone https://github.com/yourusername/marine-debris-detection.git
    cd marine-debris-detection
-Install Dependencies
-pip install -r requirements.txt
+2. **Install Dependencies**
+   ```bash
+   pip install -r requirements.txt
 
-(Optional) Train the Model
-python train.py
+3. **(Optional) Train the Model**
+   ```bash
+   python train.py
 
-Run the Streamlit Web App
-streamlit run app.py
+4. **Run the Streamlit Web App**
+   ```bash
+   streamlit run app.py
 
-📈 Evaluation Metrics
-Implemented in metrics.py:
+## 📈 Evaluation Metrics
+- Implemented in metrics.py:
+- Intersection over Union (IoU)
+- Dice Coefficient
+- Precision, Recall, F1 Score
+- Per-class Accuracy
 
-Intersection over Union (IoU)
 
-Dice Coefficient
+## 🧪 Code Snippet Overview
+**File	Functionality Summary**
+- assets.py	Static config: band names, paths, colors
+- metrics.py	IoU, Dice, F1-score, accuracy calculations
+- dataloader.py	Loads & augments MARIDA images/masks
+- unet_plus_plus.py	Defines the UNet++ architecture in PyTorch
+- loss_function.py	Custom losses for segmentation training
+- evaluation.py	Evaluates model output & renders masks
+- train.py	Trains model with logs & checkpointing
+- app.py	Streamlit-based interface for live testing
 
-Precision, Recall, F1 Score
+## 📚 Key References
+- Kikaki et al. (2020) – MARIDA Dataset Link
+- Zhou et al. (2019) – UNet++ Architecture Link
+- Mohammed (2022) – ResAttUNet
+- Gupta et al. (2023) – MFPN Network
+- Zocco et al. (2022) – EfficientDets for real-time debris detection
+- Zhou et al. (2022) – YOLOTrashCan
 
-Per-class Accuracy
-
-Visualizations provided in evaluation.py
-
-🧪 Code Snippet Overview
-File	Functionality Summary
-assets.py	Static config: band names, paths, colors
-metrics.py	IoU, Dice, F1-score, accuracy calculations
-dataloader.py	Loads & augments MARIDA images/masks
-unet_plus_plus.py	Defines the UNet++ architecture in PyTorch
-loss_function.py	Custom losses for segmentation training
-evaluation.py	Evaluates model output & renders masks
-train.py	Trains model with logs & checkpointing
-app.py	Streamlit-based interface for live testing
-
-📚 Key References
-Kikaki et al. (2020) – MARIDA Dataset Link
-
-Zhou et al. (2019) – UNet++ Architecture Link
-
-Mohammed (2022) – ResAttUNet
-
-Gupta et al. (2023) – MFPN Network
-
-Zocco et al. (2022) – EfficientDets for real-time debris detection
-
-Zhou et al. (2022) – YOLOTrashCan
-
-Full reference list available in the paper/report or /docs/references.md
-
-🤝 Contributing
-Want to help improve the model or interface?
-
-Open an issue for suggestions or bugs
-
-Fork and submit a pull request
-
-Join the discussion on performance or new datasets
-
-📝 License
-This project is licensed under the MIT License – see the LICENSE file for details.
-
-🙌 Acknowledgements
-MARIDA Team
-
-ESA Copernicus Sentinel-2 Mission
-
-OpenAI for technical guidance and documentation support
+## 🙌 Acknowledgements
+- MARIDA Team
+- ESA Copernicus Sentinel-2 Mission
+- OpenAI for technical guidance and documentation support
