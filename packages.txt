@@ -1,3 +1,1 @@
-libgdal-dev
-g++
-build-essential
+libgdal32
